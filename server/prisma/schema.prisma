@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
+  protected Boolean
+  hash      String?
+  salt      String?
+  players   String[]
+  occupants Int      @default(1)
+  game      Game?
+}
+
+model Game {
+  id     Int           @id @default(autoincrement())
+  room   Room          @relation(fields: [roomId], references: [id])
+  roomId String        @unique
+  status GameStatus
+  log    GameLogItem[]
+}
+
+enum GameStatus {
+  PRE_GAME
+  IN_PROGRESS
+  COMPLETE
+}
+
+model GameLogItem {
+  id        Int      @id @default(autoincrement())
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    Int
+  timestamp DateTime @default(now())
+  message   String
+  // TODO: Add game data
+}
